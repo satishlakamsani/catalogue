@@ -4,6 +4,11 @@ pipeline {
             label 'roboshop'
         }
     }
+     environment {
+        appVersion = ""
+        ACC_ID = "851974187100"
+        region = "us-east-1"
+    }
     
     options {
         // disableConcurrentBuilds()
@@ -18,7 +23,7 @@ pipeline {
                     def packageJson = readJSON file: 'package.json'
                     
                     // Set environment variable
-                    env.appVersion = packageJson.version
+                      appVersion = packageJson.version
                     
                     echo "Building version ${env.appVersion}"
                 }
@@ -38,9 +43,14 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    sh """
-                    docker build -t catalogue:${env.appVersion} .
-                    """
+                    withAWS(credentials: 'aws-cred', region: "${region}") {
+                        // Commands here have AWS authentication
+                        sh """
+                            aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
+                            docker build -t ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion} .
+                            docker push ${ACC_ID}.dkr.ecr.${region}.amazonaws.com/roboshop/catalogue:${appVersion}
+                        """
+                    }
                 }
             }
         }
