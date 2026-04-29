@@ -28,7 +28,7 @@ pipeline {
             def packageJson = readJSON file: 'package.json'
             
             // Access properties directly
-            def version = packageJson.version
+             appversion = packageJson.version
             
             echo "Building version ${appVersion}"
         }
