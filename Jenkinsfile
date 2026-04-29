@@ -58,6 +58,8 @@ pipeline {
                 }
             }
         }
+    }
+    
 
     // post build
     post {
@@ -73,4 +75,6 @@ pipeline {
     }
 
     }
-}
+    
+
+
