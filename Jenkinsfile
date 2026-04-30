@@ -119,7 +119,51 @@ pipeline {
                 }
             }
         }
+    
+     stage('Trivy Dockerfile Scan') 
+        {
+            steps {
+                script {
+                    sh """
+                        trivy config \
+                            --severity HIGH,MEDIUM \
+                            --format table \
+                            --output trivy-dockerfile-report.txt \
+                            Dockerfile
+                    """
+
+                    sh 'cat trivy-dockerfile-report.txt'
+
+                    def scanResult = sh(
+                        script: """
+                            trivy config \
+                                --severity HIGH,MEDIUM \
+                                --exit-code 1 \
+                                --format table \
+                                Dockerfile
+                        """,
+                        returnStatus: true
+                    )
+
+                    if (scanResult != 0) {
+                        error "🚨 Trivy found HIGH/MEDIUM misconfigurations in Dockerfile. Pipeline failed."
+                    } else {
+                        echo "✅ No HIGH or MEDIUM Dockerfile misconfigurations found. Pipeline continues."
+                    }
+                }
+            }
+        }
+    
+    
+    
     }
+
+
+
+
+
+
+
     
     // post build
     post {
